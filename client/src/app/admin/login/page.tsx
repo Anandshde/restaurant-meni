@@ -11,10 +11,13 @@ export default function AdminLoginPage() {
 
   const handleLogin = async () => {
     try {
-      const res = await axios.post("http://localhost:8000/api/auth/login", {
-        email,
-        password,
-      });
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
+        {
+          email,
+          password,
+        }
+      );
       localStorage.setItem("token", res.data.token); // 👉 Token хадгалах
       router.push("/admin");
     } catch (err) {
