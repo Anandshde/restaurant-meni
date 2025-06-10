@@ -9,6 +9,12 @@ dotenv.config(); // .env уншина
 
 const app = express();
 
+app.use(
+  cors({
+    origin: "https://restaurant-meni.vercel.app", // Frontend домэйн
+    credentials: true,
+  })
+);
 // 🛡️ Middleware
 app.use(cors());
 app.use(express.json());
