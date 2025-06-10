@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const path = require("path");
+const PORT = process.env.PORT || 8000;
 
 dotenv.config(); // .env уншина
 
@@ -34,6 +35,6 @@ mongoose
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
 // 🚀 Server start
-app.listen(8000, () => {
-  console.log("🚀 Backend running at http://localhost:8000");
+app.listen(PORT, () => {
+  console.log(`🚀 Backend running at http://localhost:${PORT}`);
 });

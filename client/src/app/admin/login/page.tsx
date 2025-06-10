@@ -21,7 +21,7 @@ export default function AdminLoginPage() {
       localStorage.setItem("token", res.data.token); // 👉 Token хадгалах
       router.push("/admin");
     } catch (err) {
-      alert("Нэвтрэх нэр эсвэл нууц үг буруу байна.");
+      alert("Нэвтрэх нэр эсвэл нууц үг буруу байна... дахин оролдоно уу.");
     }
   };
 
