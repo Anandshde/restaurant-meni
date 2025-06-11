@@ -11,25 +11,7 @@ dotenv.config(); // .env файлыг ачаална
 const app = express();
 
 // ✅ CORS зөв тохиргоо (илүү flexible болгоно)
-const allowedOrigins = [
-  "https://restaurant-meni.vercel.app",
-  "https://restaurant-meni-git-main-anands-projects-8ded01fc.vercel.app", // Vercel preview
-  "http://localhost:3000", // Local dev
-];
-
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.warn(`❌ CORS block: ${origin}`);
-        callback(new Error("CORS policy: Not allowed"));
-      }
-    },
-    credentials: true,
-  })
-);
+app.use(cors());
 
 // 🛡️ Middleware
 app.use(express.json());
