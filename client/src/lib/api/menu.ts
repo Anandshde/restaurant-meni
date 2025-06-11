@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "https://restaurant-backend.onrender.com/api/menu"; // use your actual URL
+const API_URL = `https://restaurant-meni-1.onrender.com/api`;
 
 // GET all menu items
 export const fetchMenu = async () => {
@@ -10,7 +10,7 @@ export const fetchMenu = async () => {
 
 // POST new menu item (multipart image upload)
 export const createMenuItem = async (formData: FormData) => {
-  const res = await axios.post(API_URL, formData, {
+  const res = await axios.post(`${API_URL}/menu`, formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
   return res.data;
