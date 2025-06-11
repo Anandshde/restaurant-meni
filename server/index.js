@@ -3,23 +3,37 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const path = require("path");
+
 const PORT = process.env.PORT || 8000;
 
-dotenv.config(); // .env уншина
+dotenv.config(); // .env файлыг ачаална
 
 const app = express();
 
+// ✅ CORS зөв тохиргоо
+const allowedOrigins = [
+  "https://restaurant-meni.vercel.app",
+  "http://localhost:3000", // Local хөгжүүлэлтэд зориулсан
+];
+
 app.use(
   cors({
-    origin: "https://restaurant-meni.vercel.app", // Frontend домэйн
+    origin: function (origin, callback) {
+      // Postman, curl гэх мэт origin байхгүй тохиолдолд зөвшөөрнө
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS policy: Not allowed"));
+      }
+    },
     credentials: true,
   })
 );
-// 🛡️ Middleware
 
+// 🛡️ Middleware
 app.use(express.json());
 
-// 📁 Static image folder
+// 📁 Статик зурагны фолдер
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // 📦 Routes
@@ -36,7 +50,10 @@ app.get("/", (req, res) => {
 
 // 🌐 MongoDB холболт
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 

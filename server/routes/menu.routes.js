@@ -4,6 +4,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const MenuItem = require("../models/menu.model");
+const verifyToken = require("../middlewares/verifyToken");
 
 // 🖼️ Зураг хадгалах тохиргоо
 const storage = multer.diskStorage({
@@ -17,7 +18,6 @@ const storage = multer.diskStorage({
   },
 });
 const upload = multer({ storage });
-const verifyToken = require("../middlewares/verifyToken");
 
 /**
  * ✅ GET - бүх хоолыг авах
@@ -32,27 +32,22 @@ router.get("/", async (req, res) => {
 });
 
 /**
- * ✅ POST - шинэ хоол нэмэх
+ * ✅ POST - шинэ хоол нэмэх (token хамгаалалттай)
  */
-router.post("/", upload.single("image"), async (req, res) => {
+router.post("/", verifyToken, upload.single("image"), async (req, res) => {
   try {
     const { name, price, ingredients, category, days } = req.body;
-
     console.log("✅ POST ирсэн өгөгдөл:", req.body);
 
     // 🛠️ days-г боловсруулна
     let parsedDays = [];
-
     if (Array.isArray(days)) {
       parsedDays = days;
-      console.log("📦 days нь массив хэлбэртэй:", parsedDays);
     } else if (typeof days === "string") {
       try {
         parsedDays = JSON.parse(days);
-        console.log("📦 days parse хийсэн:", parsedDays);
       } catch (e) {
-        parsedDays = [days]; // ганц утга байсан ч хадгалах
-        console.warn("⚠️ days parse амжилтгүй, ганц утга:", parsedDays);
+        parsedDays = [days];
       }
     }
 
@@ -67,8 +62,6 @@ router.post("/", upload.single("image"), async (req, res) => {
       image: req.file ? `/uploads/${req.file.filename}` : undefined,
     });
 
-    console.log("💾 MongoDB-д хадгалах:", newItem);
-
     const saved = await newItem.save();
     res.status(201).json(saved);
   } catch (err) {
@@ -78,17 +71,19 @@ router.post("/", upload.single("image"), async (req, res) => {
 });
 
 /**
- * ✅ PUT - update хийх
+ * ✅ PUT - хоол шинэчлэх (зураг шинэчлэх боломжтой)
  */
-router.put("/:id", async (req, res) => {
+router.put("/:id", verifyToken, upload.single("image"), async (req, res) => {
   try {
     const { id } = req.params;
     const update = req.body;
-    const updated = await MenuItem.findByIdAndUpdate(id, update, { new: true });
 
-    if (!updated) {
-      return res.status(404).json({ message: "Хоол олдсонгүй" });
+    if (req.file) {
+      update.image = `/uploads/${req.file.filename}`;
     }
+
+    const updated = await MenuItem.findByIdAndUpdate(id, update, { new: true });
+    if (!updated) return res.status(404).json({ message: "Хоол олдсонгүй" });
 
     res.json(updated);
   } catch (err) {
@@ -96,30 +91,19 @@ router.put("/:id", async (req, res) => {
     res.status(500).json({ message: "Серверийн алдаа", error: err });
   }
 });
-// ❌ Устгах API
-router.delete("/:id", async (req, res) => {
+
+/**
+ * ✅ DELETE - хоол устгах (token шаардлагатай)
+ */
+router.delete("/:id", verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
     const deleted = await MenuItem.findByIdAndDelete(id);
-    if (!deleted) {
-      return res.status(404).json({ message: "Хоол олдсонгүй" });
-    }
-    res.json({ message: "Хоол амжилттай устгагдлаа" });
-  } catch (err) {
-    console.error("❌ DELETE алдаа:", err);
-    res.status(500).json({ message: "Серверийн алдаа", error: err });
-  }
-});
-// ✅ DELETE - хоол устгах
-router.delete("/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const deleted = await MenuItem.findByIdAndDelete(id);
-    if (!deleted) {
-      return res.status(404).json({ message: "Хоол олдсонгүй" });
-    }
+    if (!deleted) return res.status(404).json({ message: "Хоол олдсонгүй" });
+
     res.json({ message: "Амжилттай устгалаа", deleted });
   } catch (err) {
+    console.error("❌ DELETE алдаа:", err);
     res.status(500).json({ message: "Серверийн алдаа", error: err });
   }
 });
