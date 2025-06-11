@@ -10,19 +10,20 @@ dotenv.config(); // .env файлыг ачаална
 
 const app = express();
 
-// ✅ CORS зөв тохиргоо
+// ✅ CORS зөв тохиргоо (илүү flexible болгоно)
 const allowedOrigins = [
   "https://restaurant-meni.vercel.app",
-  "http://localhost:3000", // Local хөгжүүлэлтэд зориулсан
+  "https://restaurant-meni-git-main-anands-projects-8ded01fc.vercel.app", // Vercel preview
+  "http://localhost:3000", // Local dev
 ];
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Postman, curl гэх мэт origin байхгүй тохиолдолд зөвшөөрнө
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
+        console.warn(`❌ CORS block: ${origin}`);
         callback(new Error("CORS policy: Not allowed"));
       }
     },
