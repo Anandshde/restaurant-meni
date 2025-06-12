@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const upload = require("../middlewares/multer"); // ✔️ Memory-based
-const cloudinary = require("../config/cloudinary.config"); // ✔️ Cloudinary config
+const multer = require("multer");
+const streamifier = require("streamifier");
+const cloudinary = require("../server/config/cloudinary.config");
 const MenuItem = require("../models/menu.model");
-const verifyToken = require("../middlewares/verifyToken");
 
 // 🖼️ Cloudinary тохиргоо
 cloudinary.config({
@@ -12,14 +12,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const storage = new CloudinaryStorage({
-  cloudinary,
-  params: {
-    folder: "uploads",
-    allowed_formats: ["jpg", "jpeg", "png", "gif"],
-  },
-});
-const upload = multer({ storage });
+const upload = multer({ storage: multer.memoryStorage() });
 
 /**
  * ✅ GET - бүх хоол
