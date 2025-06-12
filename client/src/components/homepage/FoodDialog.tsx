@@ -26,11 +26,7 @@ export default function FoodDialog({ food, onClose }: Props) {
             </DialogHeader>
 
             <img
-              src={
-                food.image
-                  ? `http://localhost:8000${food.image}`
-                  : "/fallback.png"
-              }
+              src={food.image || "/fallback.png"}
               alt={food.name}
               className="w-full h-48 object-cover rounded-xl mb-4"
             />

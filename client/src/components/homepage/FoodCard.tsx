@@ -19,9 +19,7 @@ export default function FoodCard({ item, onClick }: Props) {
     >
       {/* 🖼 Image */}
       <img
-        src={
-          item.image ? `http://localhost:8000${item.image}` : "/fallback.png"
-        }
+          src={item.image || "/fallback.png"}
         alt={item.name}
         className="w-full h-44 object-cover rounded-xl mb-4 shadow-sm"
       />
