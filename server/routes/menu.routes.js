@@ -4,7 +4,22 @@ const upload = require("../middlewares/multer"); // ✔️ Memory-based
 const cloudinary = require("../config/cloudinary.config"); // ✔️ Cloudinary config
 const MenuItem = require("../models/menu.model");
 const verifyToken = require("../middlewares/verifyToken");
-const streamifier = require("streamifier");
+
+// 🖼️ Cloudinary тохиргоо
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "uploads",
+    allowed_formats: ["jpg", "jpeg", "png", "gif"],
+  },
+});
+const upload = multer({ storage });
 
 /**
  * ✅ GET - бүх хоол
@@ -21,7 +36,7 @@ router.get("/", async (req, res) => {
 /**
  * ✅ POST - шинэ хоол нэмэх
  */
-router.post("/", verifyToken, upload.single("image"), async (req, res) => {
+router.post("/", upload.single("image"), async (req, res) => {
   try {
     const { name, price, ingredients, category, days } = req.body;
 
@@ -76,7 +91,7 @@ router.post("/", verifyToken, upload.single("image"), async (req, res) => {
 /**
  * ✅ PUT - хоол шинэчлэх
  */
-router.put("/:id", verifyToken, upload.single("image"), async (req, res) => {
+router.put("/:id", upload.single("image"), async (req, res) => {
   try {
     const { id } = req.params;
     const update = req.body;
@@ -111,7 +126,7 @@ router.put("/:id", verifyToken, upload.single("image"), async (req, res) => {
 /**
  * ✅ DELETE - хоол устгах
  */
-router.delete("/:id", verifyToken, async (req, res) => {
+router.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const deleted = await MenuItem.findByIdAndDelete(id);

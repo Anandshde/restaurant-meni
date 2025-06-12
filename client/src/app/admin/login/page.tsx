@@ -18,8 +18,10 @@ export default function AdminLoginPage() {
           password,
         }
       );
-      localStorage.setItem("token", res.data.token); // 👉 Token хадгалах
-      router.push("/admin");
+      if (res.data.success) {
+        localStorage.setItem("loggedIn", "true");
+        router.push("/admin");
+      }
     } catch (err) {
       alert("Нэвтрэх нэр эсвэл нууц үг буруу байна... дахин оролдоно уу.");
     }
