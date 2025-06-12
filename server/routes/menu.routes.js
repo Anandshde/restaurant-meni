@@ -1,11 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const multer = require("multer");
-const cloudinary = require("cloudinary").v2;
-const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const multer = require("multer"); // хэрэгтэй
+const upload = require("../middlewares/multer"); // buffer-based multer config
+const cloudinary = require("../config/cloudinary.config"); // ✅ зөв config
 const MenuItem = require("../models/menu.model");
-const verifyToken = require("../middlewares/verifyToken");
-const cloudinary = require("../lib/cloudinary");
+const verifyToken = require("../middlewares/verifyToken"); // хэрвээ auth хэрэглэж байгаа бол
 
 // 🖼️ Зураг хадгалах тохиргоо
 const storage = multer.diskStorage({
