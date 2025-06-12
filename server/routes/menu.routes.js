@@ -1,26 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const multer = require("multer"); // хэрэгтэй
-const upload = require("../middlewares/multer"); // buffer-based multer config
-const cloudinary = require("../config/cloudinary.config"); // ✅ зөв config
+const upload = require("../middlewares/multer"); // ✔️ Memory-based
+const cloudinary = require("../config/cloudinary.config"); // ✔️ Cloudinary config
 const MenuItem = require("../models/menu.model");
-const verifyToken = require("../middlewares/verifyToken"); // хэрвээ auth хэрэглэж байгаа бол
-
-// 🖼️ Зураг хадгалах тохиргоо
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const uploadPath = "uploads/";
-    if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath);
-    cb(null, uploadPath);
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
-});
-const upload = multer({ storage });
+const verifyToken = require("../middlewares/verifyToken");
+const streamifier = require("streamifier");
 
 /**
- * ✅ GET - бүх хоолыг авах
+ * ✅ GET - бүх хоол
  */
 router.get("/", async (req, res) => {
   try {
@@ -51,11 +38,20 @@ router.post("/", verifyToken, upload.single("image"), async (req, res) => {
 
     let imageUrl;
     if (req.file) {
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: "restaurant-menu",
-      });
+      const streamUpload = () =>
+        new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder: "restaurant-menu" },
+            (error, result) => {
+              if (result) resolve(result);
+              else reject(error);
+            }
+          );
+          streamifier.createReadStream(req.file.buffer).pipe(stream);
+        });
+
+      const result = await streamUpload();
       imageUrl = result.secure_url;
-      fs.unlinkSync(req.file.path); // Local түр файлыг устгах
     }
 
     const newItem = new MenuItem({
@@ -66,7 +62,7 @@ router.post("/", verifyToken, upload.single("image"), async (req, res) => {
         : [],
       category,
       days: parsedDays,
-      image: req.file ? `/uploads/${req.file.filename}` : undefined,
+      image: imageUrl,
     });
 
     const saved = await newItem.save();
@@ -86,7 +82,20 @@ router.put("/:id", verifyToken, upload.single("image"), async (req, res) => {
     const update = req.body;
 
     if (req.file) {
-      update.image = `/uploads/${req.file.filename}`;
+      const streamUpload = () =>
+        new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder: "restaurant-menu" },
+            (error, result) => {
+              if (result) resolve(result);
+              else reject(error);
+            }
+          );
+          streamifier.createReadStream(req.file.buffer).pipe(stream);
+        });
+
+      const result = await streamUpload();
+      update.image = result.secure_url;
     }
 
     const updated = await MenuItem.findByIdAndUpdate(id, update, { new: true });
