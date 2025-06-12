@@ -36,7 +36,7 @@ export default function MenuSection({
               className="bg-gradient-to-br from-amber-50 to-yellow-100 text-zinc-800 p-5 rounded-2xl shadow-xl border border-yellow-200 cursor-pointer transition-all duration-300"
             >
               <img
-                src={`http://localhost:8000${item.image}`}
+                src={item.image || "/fallback.png"}
                 alt={item.name}
                 className="w-full h-44 object-cover rounded-xl mb-4 shadow"
               />

@@ -23,7 +23,7 @@ export default function MenuList({ menus, onEdit, onRefresh }: Props) {
           >
             {menu.image && (
               <img
-                src={`http://localhost:8000${menu.image}`}
+                src={menu.image}
                 alt={menu.name}
                 className="w-full h-40 object-cover rounded mb-2"
               />
