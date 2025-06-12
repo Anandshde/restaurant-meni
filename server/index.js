@@ -2,7 +2,6 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
-const path = require("path");
 
 const PORT = process.env.PORT || 8000;
 
@@ -16,8 +15,7 @@ app.use(cors());
 // 🛡️ Middleware
 app.use(express.json());
 
-// 📁 Статик зурагны фолдер
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// 📁 Cloudinary зурагны URL ашиглах тул локал статик фолдер шаардлагагүй
 
 // 📦 Routes
 const menuRoutes = require("./routes/menu.routes");
