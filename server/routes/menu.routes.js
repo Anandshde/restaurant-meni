@@ -1,13 +1,13 @@
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
+const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const MenuItem = require("../models/menu.model");
 const verifyToken = require("../middlewares/verifyToken");
 const cloudinary = require("../lib/cloudinary");
 
-// 🖼️ Зураг түр хугацаанд хадгалах multer тохиргоо
+// 🖼️ Зураг хадгалах тохиргоо
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const uploadPath = "uploads/";
@@ -67,7 +67,7 @@ router.post("/", verifyToken, upload.single("image"), async (req, res) => {
         : [],
       category,
       days: parsedDays,
-      image: imageUrl,
+      image: req.file ? `/uploads/${req.file.filename}` : undefined,
     });
 
     const saved = await newItem.save();
@@ -87,11 +87,7 @@ router.put("/:id", verifyToken, upload.single("image"), async (req, res) => {
     const update = req.body;
 
     if (req.file) {
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: "restaurant-menu",
-      });
-      update.image = result.secure_url;
-      fs.unlinkSync(req.file.path);
+      update.image = `/uploads/${req.file.filename}`;
     }
 
     const updated = await MenuItem.findByIdAndUpdate(id, update, { new: true });
