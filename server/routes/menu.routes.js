@@ -5,8 +5,9 @@ const path = require("path");
 const fs = require("fs");
 const MenuItem = require("../models/menu.model");
 const verifyToken = require("../middlewares/verifyToken");
+const cloudinary = require("../lib/cloudinary");
 
-// 🖼️ Зураг хадгалах тохиргоо
+// 🖼️ Зураг түр хугацаанд хадгалах multer тохиргоо
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const uploadPath = "uploads/";
@@ -32,23 +33,30 @@ router.get("/", async (req, res) => {
 });
 
 /**
- * ✅ POST - шинэ хоол нэмэх (token хамгаалалттай)
+ * ✅ POST - шинэ хоол нэмэх
  */
 router.post("/", verifyToken, upload.single("image"), async (req, res) => {
   try {
     const { name, price, ingredients, category, days } = req.body;
-    console.log("✅ POST ирсэн өгөгдөл:", req.body);
 
-    // 🛠️ days-г боловсруулна
     let parsedDays = [];
     if (Array.isArray(days)) {
       parsedDays = days;
     } else if (typeof days === "string") {
       try {
         parsedDays = JSON.parse(days);
-      } catch (e) {
+      } catch {
         parsedDays = [days];
       }
+    }
+
+    let imageUrl;
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "restaurant-menu",
+      });
+      imageUrl = result.secure_url;
+      fs.unlinkSync(req.file.path); // Local түр файлыг устгах
     }
 
     const newItem = new MenuItem({
@@ -59,7 +67,7 @@ router.post("/", verifyToken, upload.single("image"), async (req, res) => {
         : [],
       category,
       days: parsedDays,
-      image: req.file ? `/uploads/${req.file.filename}` : undefined,
+      image: imageUrl,
     });
 
     const saved = await newItem.save();
@@ -71,7 +79,7 @@ router.post("/", verifyToken, upload.single("image"), async (req, res) => {
 });
 
 /**
- * ✅ PUT - хоол шинэчлэх (зураг шинэчлэх боломжтой)
+ * ✅ PUT - хоол шинэчлэх
  */
 router.put("/:id", verifyToken, upload.single("image"), async (req, res) => {
   try {
@@ -79,7 +87,11 @@ router.put("/:id", verifyToken, upload.single("image"), async (req, res) => {
     const update = req.body;
 
     if (req.file) {
-      update.image = `/uploads/${req.file.filename}`;
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "restaurant-menu",
+      });
+      update.image = result.secure_url;
+      fs.unlinkSync(req.file.path);
     }
 
     const updated = await MenuItem.findByIdAndUpdate(id, update, { new: true });
@@ -93,7 +105,7 @@ router.put("/:id", verifyToken, upload.single("image"), async (req, res) => {
 });
 
 /**
- * ✅ DELETE - хоол устгах (token шаардлагатай)
+ * ✅ DELETE - хоол устгах
  */
 router.delete("/:id", verifyToken, async (req, res) => {
   try {
