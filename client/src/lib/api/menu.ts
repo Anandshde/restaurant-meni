@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const API_URL = `https://restaurant-meni-1.onrender.com/api`;
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 // 🔑 Token авна
 const getAuthHeader = () => {
