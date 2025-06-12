@@ -19,9 +19,9 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      router.push("/admin/login"); // 👈 Хэрвээ token байхгүй бол буцаана
+    const loggedIn = localStorage.getItem("loggedIn");
+    if (!loggedIn) {
+      router.push("/admin/login"); // 👈 Хэрвээ нэвтрээгүй бол буцаана
     } else {
       loadMenus();
     }

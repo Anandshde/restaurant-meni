@@ -4,7 +4,6 @@ const multer = require("multer");
 const cloudinary = require("cloudinary").v2;
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const MenuItem = require("../models/menu.model");
-const verifyToken = require("../middlewares/verifyToken");
 
 // 🖼️ Cloudinary тохиргоо
 cloudinary.config({
@@ -35,9 +34,9 @@ router.get("/", async (req, res) => {
 });
 
 /**
- * ✅ POST - шинэ хоол нэмэх (token хамгаалалттай)
+ * ✅ POST - шинэ хоол нэмэх
  */
-router.post("/", verifyToken, upload.single("image"), async (req, res) => {
+router.post("/", upload.single("image"), async (req, res) => {
   try {
     const { name, price, ingredients, category, days } = req.body;
     console.log("✅ POST ирсэн өгөгдөл:", req.body);
@@ -76,7 +75,7 @@ router.post("/", verifyToken, upload.single("image"), async (req, res) => {
 /**
  * ✅ PUT - хоол шинэчлэх (зураг шинэчлэх боломжтой)
  */
-router.put("/:id", verifyToken, upload.single("image"), async (req, res) => {
+router.put("/:id", upload.single("image"), async (req, res) => {
   try {
     const { id } = req.params;
     const update = req.body;
@@ -96,9 +95,9 @@ router.put("/:id", verifyToken, upload.single("image"), async (req, res) => {
 });
 
 /**
- * ✅ DELETE - хоол устгах (token шаардлагатай)
+ * ✅ DELETE - хоол устгах
  */
-router.delete("/:id", verifyToken, async (req, res) => {
+router.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const deleted = await MenuItem.findByIdAndDelete(id);
