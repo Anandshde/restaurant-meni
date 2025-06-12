@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const multer = require("multer");
-const cloudinary = require("cloudinary").v2;
-const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const upload = require("../middlewares/multer"); // ✔️ Memory-based
+const cloudinary = require("../config/cloudinary.config"); // ✔️ Cloudinary config
 const MenuItem = require("../models/menu.model");
+const verifyToken = require("../middlewares/verifyToken");
 
 // 🖼️ Cloudinary тохиргоо
 cloudinary.config({
@@ -22,7 +22,7 @@ const storage = new CloudinaryStorage({
 const upload = multer({ storage });
 
 /**
- * ✅ GET - бүх хоолыг авах
+ * ✅ GET - бүх хоол
  */
 router.get("/", async (req, res) => {
   try {
@@ -39,18 +39,34 @@ router.get("/", async (req, res) => {
 router.post("/", upload.single("image"), async (req, res) => {
   try {
     const { name, price, ingredients, category, days } = req.body;
-    console.log("✅ POST ирсэн өгөгдөл:", req.body);
 
-    // 🛠️ days-г боловсруулна
     let parsedDays = [];
     if (Array.isArray(days)) {
       parsedDays = days;
     } else if (typeof days === "string") {
       try {
         parsedDays = JSON.parse(days);
-      } catch (e) {
+      } catch {
         parsedDays = [days];
       }
+    }
+
+    let imageUrl;
+    if (req.file) {
+      const streamUpload = () =>
+        new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder: "restaurant-menu" },
+            (error, result) => {
+              if (result) resolve(result);
+              else reject(error);
+            }
+          );
+          streamifier.createReadStream(req.file.buffer).pipe(stream);
+        });
+
+      const result = await streamUpload();
+      imageUrl = result.secure_url;
     }
 
     const newItem = new MenuItem({
@@ -61,7 +77,7 @@ router.post("/", upload.single("image"), async (req, res) => {
         : [],
       category,
       days: parsedDays,
-      image: req.file ? req.file.path : undefined,
+      image: imageUrl,
     });
 
     const saved = await newItem.save();
@@ -73,7 +89,7 @@ router.post("/", upload.single("image"), async (req, res) => {
 });
 
 /**
- * ✅ PUT - хоол шинэчлэх (зураг шинэчлэх боломжтой)
+ * ✅ PUT - хоол шинэчлэх
  */
 router.put("/:id", upload.single("image"), async (req, res) => {
   try {
@@ -81,7 +97,20 @@ router.put("/:id", upload.single("image"), async (req, res) => {
     const update = req.body;
 
     if (req.file) {
-      update.image = req.file.path;
+      const streamUpload = () =>
+        new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder: "restaurant-menu" },
+            (error, result) => {
+              if (result) resolve(result);
+              else reject(error);
+            }
+          );
+          streamifier.createReadStream(req.file.buffer).pipe(stream);
+        });
+
+      const result = await streamUpload();
+      update.image = result.secure_url;
     }
 
     const updated = await MenuItem.findByIdAndUpdate(id, update, { new: true });

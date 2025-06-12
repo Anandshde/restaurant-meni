@@ -18,7 +18,6 @@ import { toast } from "sonner";
 import { createMenuItem } from "@/lib/api/menu";
 
 const categories = ["Main", "Lunch", "Drink", "Desserts", "Soup", "Salad"];
-
 const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
 type Props = {
@@ -45,19 +44,14 @@ export default function AddMenuForm({ onAdded }: Props) {
       ingredients: Yup.string(),
       category: Yup.string().required("Ангилал сонгоно уу"),
     }),
-    onSubmit: async (values, { resetForm }) => {
+    onSubmit: async (values, { resetForm, setSubmitting }) => {
       const formData = new FormData();
       formData.append("name", values.name);
       formData.append("price", values.price.toString());
       formData.append("ingredients", values.ingredients);
       formData.append("category", values.category);
-      formData.append("days", JSON.stringify(days)); // ✔️ Days as string
+      formData.append("days", JSON.stringify(days));
       if (image) formData.append("image", image);
-
-      console.log("📝 Илгээж байна:", {
-        ...values,
-        days,
-      });
 
       try {
         await createMenuItem(formData);
@@ -69,6 +63,8 @@ export default function AddMenuForm({ onAdded }: Props) {
         setDays([]);
       } catch (error) {
         toast.error("❌ Хоол нэмэхэд алдаа гарлаа.");
+      } finally {
+        setSubmitting(false);
       }
     },
   });
@@ -99,6 +95,7 @@ export default function AddMenuForm({ onAdded }: Props) {
         placeholder="Хоолны нэр"
         value={formik.values.name}
         onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
       />
 
       <Input
@@ -108,6 +105,7 @@ export default function AddMenuForm({ onAdded }: Props) {
         placeholder="Үнэ (₮)"
         value={formik.values.price}
         onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
       />
 
       <Textarea
@@ -116,6 +114,7 @@ export default function AddMenuForm({ onAdded }: Props) {
         placeholder="Орц (, таслалаар)"
         value={formik.values.ingredients}
         onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
       />
 
       <Select
@@ -134,7 +133,6 @@ export default function AddMenuForm({ onAdded }: Props) {
         </SelectContent>
       </Select>
 
-      {/* Days shown only for Lunch */}
       {formik.values.category === "Lunch" && (
         <div>
           <p className="text-sm mt-2">🔘 Lunch хоолны өдрүүд:</p>
@@ -166,7 +164,6 @@ export default function AddMenuForm({ onAdded }: Props) {
         type="file"
         accept="image/*"
         onChange={handleImageChange}
-        placeholder="Зураг"
       />
 
       {preview && (
@@ -177,8 +174,8 @@ export default function AddMenuForm({ onAdded }: Props) {
         />
       )}
 
-      <Button type="submit" className="w-full">
-        ➕ Нэмэх
+      <Button type="submit" className="w-full" disabled={formik.isSubmitting}>
+        {formik.isSubmitting ? "⏳ Нэмэгдэж байна..." : "➕ Нэмэх"}
       </Button>
     </motion.form>
   );
