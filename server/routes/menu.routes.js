@@ -93,7 +93,7 @@ router.put("/:id", upload.single("image"), async (req, res) => {
       const streamUpload = () =>
         new Promise((resolve, reject) => {
           const stream = cloudinary.uploader.upload_stream(
-            { folder: "restaurant-menu" },
+            { folder: "restaurant-menu", upload_preset: "menu_upload" },
             (error, result) => {
               if (result) resolve(result);
               else reject(error);
