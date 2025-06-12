@@ -1,20 +1,22 @@
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
+const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const MenuItem = require("../models/menu.model");
-const verifyToken = require("../middlewares/verifyToken");
 
-// 🖼️ Зураг хадгалах тохиргоо
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const uploadPath = "uploads/";
-    if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath);
-    cb(null, uploadPath);
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname));
+// 🖼️ Cloudinary тохиргоо
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "uploads",
+    allowed_formats: ["jpg", "jpeg", "png", "gif"],
   },
 });
 const upload = multer({ storage });
@@ -32,9 +34,9 @@ router.get("/", async (req, res) => {
 });
 
 /**
- * ✅ POST - шинэ хоол нэмэх (token хамгаалалттай)
+ * ✅ POST - шинэ хоол нэмэх
  */
-router.post("/", verifyToken, upload.single("image"), async (req, res) => {
+router.post("/", upload.single("image"), async (req, res) => {
   try {
     const { name, price, ingredients, category, days } = req.body;
     console.log("✅ POST ирсэн өгөгдөл:", req.body);
@@ -59,7 +61,7 @@ router.post("/", verifyToken, upload.single("image"), async (req, res) => {
         : [],
       category,
       days: parsedDays,
-      image: req.file ? `/uploads/${req.file.filename}` : undefined,
+      image: req.file ? req.file.path : undefined,
     });
 
     const saved = await newItem.save();
@@ -73,13 +75,13 @@ router.post("/", verifyToken, upload.single("image"), async (req, res) => {
 /**
  * ✅ PUT - хоол шинэчлэх (зураг шинэчлэх боломжтой)
  */
-router.put("/:id", verifyToken, upload.single("image"), async (req, res) => {
+router.put("/:id", upload.single("image"), async (req, res) => {
   try {
     const { id } = req.params;
     const update = req.body;
 
     if (req.file) {
-      update.image = `/uploads/${req.file.filename}`;
+      update.image = req.file.path;
     }
 
     const updated = await MenuItem.findByIdAndUpdate(id, update, { new: true });
@@ -93,9 +95,9 @@ router.put("/:id", verifyToken, upload.single("image"), async (req, res) => {
 });
 
 /**
- * ✅ DELETE - хоол устгах (token шаардлагатай)
+ * ✅ DELETE - хоол устгах
  */
-router.delete("/:id", verifyToken, async (req, res) => {
+router.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const deleted = await MenuItem.findByIdAndDelete(id);

@@ -19,16 +19,27 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      router.push("/admin/login"); // 👈 Хэрвээ token байхгүй бол буцаана
+    const loggedIn = localStorage.getItem("loggedIn");
+    if (!loggedIn) {
+      router.push("/admin/login"); // 👈 Хэрвээ нэвтрээгүй бол буцаана
     } else {
       loadMenus();
     }
   }, []);
 
+  const handleLogout = () => {
+    localStorage.removeItem("loggedIn");
+    router.push("/admin/login");
+  };
+
   return (
     <main className="p-6 space-y-8 bg-secondary min-h-screen">
+      <button
+        onClick={handleLogout}
+        className="mb-4 bg-red-500 text-white py-1 px-3 rounded"
+      >
+        Гарах
+      </button>
       <MenuList
         menus={menus}
         onEdit={(item) => setSelectedEdit(item)}

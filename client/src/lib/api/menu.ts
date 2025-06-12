@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const API_URL = `https://restaurant-meni-1.onrender.com/api`;
+// 📡 API суваг URL-ийг орчны хувьсагчаас уншина
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 // GET all menu items
 export const fetchMenu = async () => {
