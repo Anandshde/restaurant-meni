@@ -12,32 +12,63 @@ export default function FoodCard({ item, onClick }: Props) {
   return (
     <motion.div
       onClick={onClick}
-      whileHover={{ scale: 1.03 }}
-      whileTap={{ scale: 0.97 }}
-      transition={{ type: "spring", stiffness: 200, damping: 15 }}
-      className="bg-gradient-to-br from-amber-50 to-yellow-100 text-zinc-800 p-5 rounded-2xl shadow-xl border border-amber-200 cursor-pointer transition-all duration-300"
+      whileHover={{ scale: 1.02, y: -4 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl border border-gray-100 cursor-pointer transition-all duration-300 overflow-hidden backdrop-blur-sm"
     >
-      {/* 🖼 Image */}
-      <img
+      {/* Image Container with Overlay */}
+      <div className="relative overflow-hidden">
+        <img
           src={item.image || "/fallback.png"}
-        alt={item.name}
-        className="w-full h-44 object-cover rounded-xl mb-4 shadow-sm"
-      />
+          alt={item.name}
+          className="w-full h-48 sm:h-52 object-cover transition-transform duration-500 group-hover:scale-110"
+        />
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-      {/* 📝 Name */}
-      <h3 className="text-xl font-bold mb-1 tracking-tight">{item.name}</h3>
+        {/* Price Badge */}
+        <div className="absolute top-3 right-3 bg-amber-500 text-white px-3 py-1.5 rounded-full text-sm font-semibold shadow-lg backdrop-blur-sm">
+          ₮ {item.price.toLocaleString()}
+        </div>
+      </div>
 
-      {/* 🧂 Ingredients */}
-      <p className="text-sm text-zinc-700 mb-3 leading-tight line-clamp-2">
-        {Array.isArray(item.ingredients)
-          ? item.ingredients.join(", ")
-          : item.ingredients}
-      </p>
+      {/* Content */}
+      <div className="p-5 sm:p-6">
+        {/* Name */}
+        <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 line-clamp-1 group-hover:text-amber-600 transition-colors duration-200">
+          {item.name}
+        </h3>
 
-      {/* 💸 Price */}
-      <p className="text-yellow-600 text-lg font-bold">
-        ₮ {item.price.toLocaleString()}
-      </p>
+        {/* Ingredients */}
+        <p className="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed">
+          {Array.isArray(item.ingredients)
+            ? item.ingredients.join(", ")
+            : item.ingredients}
+        </p>
+
+        {/* Action Indicator */}
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-gray-500 font-medium">
+            Click to view details
+          </span>
+          <div className="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center group-hover:bg-amber-200 transition-colors duration-200">
+            <svg
+              className="w-3 h-3 text-amber-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </div>
+        </div>
+      </div>
     </motion.div>
   );
 }
